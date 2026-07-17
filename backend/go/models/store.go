@@ -24,6 +24,17 @@ func (s *Store) CreateUser(user User) User{
 	s.Users[user.ID] = user
 	return user
 }
+func (s *Store) GetUserByEmail(email string) (User, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, user := range s.Users {
+		if user.Email == email {
+			return user, true
+		}
+	}
+	return User{}, false
+}
 func newID() string{
 	bytes := make([]byte, 8)
 	rand.Read(bytes)
