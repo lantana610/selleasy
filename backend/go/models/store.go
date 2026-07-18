@@ -7,13 +7,26 @@ import (
 )
 
 type Store struct {
-	mu    sync.Mutex
-	Users map[string]User
+	mu       sync.Mutex
+	Users    map[string]User
+	Listings map[string]Listing
 }
+
 func NewStore() *Store {
 	return &Store{
-		Users: make(map[string]User),
+		Users:    make(map[string]User),
+		Listings: make(map[string]Listing),
 	}
+}
+
+func (s *Store) CreateListing(listing Listing) Listing {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	listing.ID = newID()
+	listing.Status = StatusAvailable
+	s.Listings[listing.ID] = listing
+	return listing
 }
 
 func (s *Store) CreateUser(user User) User{
