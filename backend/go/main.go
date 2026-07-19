@@ -22,6 +22,7 @@ func main() {
 
 	mux.HandleFunc(pattern, handler)
 	routes.RegisterAuthRoutes(mux, store)
+	routes.RegisterListingRoutes(mux, store)
 
 	log.Println("SellEasy API listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
