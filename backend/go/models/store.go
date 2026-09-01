@@ -53,3 +53,13 @@ func newID() string{
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
+func (s *Store) GetAllListings() []Listing {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	result := []Listing{}
+	for _, listing := range s.Listings {
+		result = append(result, listing)
+	}
+	return result
+}

@@ -9,15 +9,15 @@ const (
 )
 
 type Listing struct {
-	ID          string
-	SellerID    string
-	Title       string
-	Description string
-	Category    string
-	Price       float64
-	Currency    string
-	City        string
-	State       string
-	Country     string
-	Status      ListingStatus
+	ID          string        `json:"id"`
+	SellerID    string        `json:"seller_id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Category    string        `json:"category"`
+	Price       float64       `json:"price"`
+	Currency    string        `json:"currency"`
+	City        string        `json:"city"`
+	State       string        `json:"state"`
+	Country     string        `json:"country"`
+	Status      ListingStatus `json:"status"`
 }

@@ -19,12 +19,6 @@ type createListingRequest struct {
 	Country     string  `json:"country"`
 }
 
-func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
-	mux.HandleFunc("POST /api/v1/listings", func(w http.ResponseWriter, r *http.Request) {
-		handleCreateListing(w, r, store)
-	})
-}
-
 func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	var req createListingRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -53,4 +47,17 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 	created := store.CreateListing(listing)
 
 	json.NewEncoder(w).Encode(created)
+}
+func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
+	mux.HandleFunc("POST /api/v1/listings", func(w http.ResponseWriter, r *http.Request) {
+		handleCreateListing(w, r, store)
+	})
+	mux.HandleFunc("GET /api/v1/listings", func(w http.ResponseWriter, r *http.Request) {
+		handleGetListings(w, r, store)
+	})
+}
+
+func handleGetListings(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	listings := store.GetAllListings()
+	json.NewEncoder(w).Encode(listings)
 }
