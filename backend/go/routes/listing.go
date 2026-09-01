@@ -58,6 +58,21 @@ func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
 }
 
 func handleGetListings(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	category := r.URL.Query().Get("category")
+	city := r.URL.Query().Get("city")
+
 	listings := store.GetAllListings()
-	json.NewEncoder(w).Encode(listings)
+
+	filtered := []models.Listing{}
+	for _, listing := range listings {
+		if category != "" && listing.Category != category {
+			continue
+		}
+		if city != "" && listing.City != city {
+			continue
+		}
+		filtered = append(filtered, listing)
+	}
+
+	json.NewEncoder(w).Encode(filtered)
 }
