@@ -12,6 +12,7 @@ type Store struct {
 	Users    map[string]User
 	Listings map[string]Listing
 	Orders   map[string]Order
+	
 }
 
 func NewStore() *Store {
@@ -51,6 +52,13 @@ func (s *Store) CreateListing(listing Listing) Listing {
 	listing.Status = StatusAvailable
 	s.Listings[listing.ID] = listing
 	return listing
+}
+func (s *Store) GetListing(id string) (Listing, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	listing, exists := s.Listings[id]
+	return listing, exists
 }
 
 func (s *Store) CreateUser(user User) User{

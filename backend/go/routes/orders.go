@@ -34,7 +34,7 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 		return
 	}
 
-	listing, exists := store.Listings[req.ListingID]
+	listing, exists := store.GetListing(req.ListingID)
 	if !exists {
 		http.Error(w, "listing not found", http.StatusNotFound)
 		return
