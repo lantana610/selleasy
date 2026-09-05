@@ -1,4 +1,4 @@
- package routes
+package routes
 
 import (
 	"encoding/json"
@@ -15,9 +15,16 @@ type placeOrderRequest struct {
 	Currency      string  `json:"currency"`
 }
 
+type updateOrderStatusRequest struct {
+	Status string `json:"status"`
+}
+
 func RegisterOrderRoutes(mux *http.ServeMux, store *models.Store) {
 	mux.HandleFunc("POST /api/v1/orders", func(w http.ResponseWriter, r *http.Request) {
 		handlePlaceOrder(w, r, store)
+	})
+	mux.HandleFunc("PATCH /api/v1/orders/{id}/status", func(w http.ResponseWriter, r *http.Request) {
+		handleUpdateOrderStatus(w, r, store)
 	})
 }
 
@@ -56,4 +63,29 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 	}
 
 	json.NewEncoder(w).Encode(created)
+}
+
+func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	orderID := r.PathValue("id")
+
+	var req updateOrderStatusRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	status := models.OrderStatus(req.Status)
+	if status != models.OrderCompleted && status != models.OrderCancelled && status != models.OrderRequested {
+		http.Error(w, "status must be requested, completed, or cancelled", http.StatusBadRequest)
+		return
+	}
+
+	updated, err := store.UpdateOrderStatus(orderID, status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(updated)
 }

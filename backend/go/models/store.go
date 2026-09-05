@@ -80,6 +80,29 @@ func (s *Store) GetUserByEmail(email string) (User, bool) {
 	}
 	return User{}, false
 }
+func (s *Store) UpdateOrderStatus(orderID string, status OrderStatus) (Order, error){
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	order, exists := s.Orders[orderID]
+	if !exists{
+		return  Order{}, errors.New("order not found")
+	}
+
+	order.Status = status
+
+	s.Orders[orderID] = order
+	listing, exists := s.Listings[order.ListingID]
+	if exists{
+		if status == OrderCompleted{
+			listing.Status = StatusSold
+		}else if status	 == OrderCancelled{
+			listing.Status = StatusAvailable
+		}
+		s.Listings[order.ListingID] = listing
+	}
+	return  order, nil
+}
 func newID() string{
 	bytes := make([]byte, 8)
 	rand.Read(bytes)
