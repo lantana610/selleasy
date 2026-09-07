@@ -62,8 +62,15 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
+	seller, exists := store.GetUser(created.SellerID)
+	sellerEmail := ""
+	if exists {
+		sellerEmail = seller.Email
+	}
+
 	services.QueueEmailNotification(created.SellerID, "new_order", map[string]interface{}{
 		"title": listing.Title,
+		"email": sellerEmail,
 	})
 	json.NewEncoder(w).Encode(created)
 

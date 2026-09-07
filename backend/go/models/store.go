@@ -22,6 +22,13 @@ func NewStore() *Store {
 		Orders:   make(map[string]Order),  
 	}
 }
+func (s *Store) GetUser(id string) (User, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	user, exists := s.Users[id]
+	return user, exists
+}
 func (s *Store) CreateOrder(order Order) (Order, error){
 	s.mu.Lock()
 	defer s.mu.Unlock()
