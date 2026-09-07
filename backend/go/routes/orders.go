@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"selleasy/models"
+	"selleasy/services"
 )
 
 type placeOrderRequest struct {
@@ -61,8 +62,11 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
-
+	services.QueueEmailNotification(created.SellerID, "new_order", map[string]interface{}{
+		"title": listing.Title,
+	})
 	json.NewEncoder(w).Encode(created)
+
 }
 
 func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *models.Store) {
