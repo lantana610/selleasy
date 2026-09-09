@@ -1,0 +1,17 @@
+:root {
+  --se-green: #1DB954;
+  --se-orange: #FF7A00;
+  --se-blue: #1565D8;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background-color: #F7F9FA;
+}
+
+#navbar {
+  background-color: var(--se-blue);
+  color: white;
+  padding: 16px;
+}
