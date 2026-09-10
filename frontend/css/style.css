@@ -15,3 +15,27 @@ body {
   color: white;
   padding: 16px;
 }
+#listings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+}
+
+.product-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  width: 200px;
+}
+
+.product-card h3 {
+  margin: 0 0 8px 0;
+  color: var(--se-blue);
+}
+
+.product-card p {
+  margin: 4px 0;
+  color: #555;
+}
