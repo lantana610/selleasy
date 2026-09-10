@@ -19,7 +19,36 @@ function renderListings(listings) {
       <h3>${listing.title}</h3>
       <p>${listing.currency} ${listing.price}</p>
       <p>${listing.city}, ${listing.country}</p>
+      <button>Order</button>
     `;
+
+    const button = card.querySelector("button");
+    button.addEventListener("click", () => {
+      placeOrder(listing);
+    });
+
     container.appendChild(card);
   }
+}
+
+function placeOrder(listing) {
+  fetch(`${API_BASE}/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      listing_id: listing.id,
+      buyer_id: "b1",
+      payment_method: "mobile_money",
+      amount: listing.price,
+      currency: listing.currency,
+    }),
+  })
+    .then(response => response.json())
+    .then(order => {
+      console.log("Order placed:", order);
+      alert(`Order placed for ${listing.title}!`);
+    })
+    .catch(error => {
+      console.error("Failed to place order:", error);
+    });
 }
