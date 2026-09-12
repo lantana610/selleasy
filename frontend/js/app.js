@@ -32,12 +32,16 @@ function renderListings(listings) {
 }
 
 function placeOrder(listing) {
+  if (!currentUser){
+    alert("please log in first.");
+    return;
+  }
   fetch(`${API_BASE}/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       listing_id: listing.id,
-      buyer_id: "b1",
+      buyer_id: currentUser.id,
       payment_method: "mobile_money",
       amount: listing.price,
       currency: listing.currency,
@@ -52,3 +56,31 @@ function placeOrder(listing) {
       console.error("Failed to place order:", error);
     });
 }
+let currentUser = null;
+
+const loginButton = document.getElementById("loginButton");
+loginButton.addEventListener("click", () => {
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      return response.text();
+    })
+    .then(result => {
+      const userID = result.split(": ")[1];
+      currentUser = { email: email, id: userID };
+      document.getElementById("loginStatus").textContent = `Logged in as ${email}`;
+    })
+    .catch(error => {
+      document.getElementById("loginStatus").textContent = "Login failed";
+      console.error(error);
+    });
+});
