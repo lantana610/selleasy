@@ -32,10 +32,42 @@ function renderListings(listings) {
 }
 
 function placeOrder(listing) {
-  if (!currentUser){
-    alert("please log in first.");
+  if (!currentUser) {
+    alert("Please log in first.");
     return;
   }
+
+  showOrderModal(listing);
+}
+
+function showOrderModal(listing) {
+  const modal = document.getElementById("orderModal");
+  modal.innerHTML = `
+    <div class="modal-box">
+      <h3>Confirm order</h3>
+      <p>${listing.title} — ${listing.currency} ${listing.price}</p>
+      <button class="confirm-btn">Confirm</button>
+      <button class="cancel-btn">Cancel</button>
+    </div>
+  `;
+
+  modal.querySelector(".confirm-btn").addEventListener("click", () => {
+    confirmOrder(listing);
+  });
+
+  modal.querySelector(".cancel-btn").addEventListener("click", () => {
+    closeOrderModal();
+  });
+
+  modal.classList.add("visible");
+}
+
+function closeOrderModal() {
+  const modal = document.getElementById("orderModal");
+  modal.classList.remove("visible");
+}
+let currentUser = null;
+function confirmOrder(listing) {
   fetch(`${API_BASE}/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -50,13 +82,14 @@ function placeOrder(listing) {
     .then(response => response.json())
     .then(order => {
       console.log("Order placed:", order);
-      alert(`Order placed for ${listing.title}!`);
+      /* close the modal here, instead of using alert(...) */
+      closeOrderModal();
+
     })
     .catch(error => {
       console.error("Failed to place order:", error);
     });
 }
-let currentUser = null;
 
 const loginButton = document.getElementById("loginButton");
 loginButton.addEventListener("click", () => {
