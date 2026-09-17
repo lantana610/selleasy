@@ -79,15 +79,22 @@ function confirmOrder(listing) {
       currency: listing.currency,
     }),
   })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(message => {
+          throw new Error(message);
+        });
+      }
+      return response.json();
+    })
     .then(order => {
       console.log("Order placed:", order);
-      /* close the modal here, instead of using alert(...) */
       closeOrderModal();
-
     })
     .catch(error => {
       console.error("Failed to place order:", error);
+      alert(error.message);
+      closeOrderModal();
     });
 }
 
