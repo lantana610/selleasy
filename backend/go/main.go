@@ -24,6 +24,7 @@ func main() {
 	routes.RegisterAuthRoutes(mux, store)
 	routes.RegisterListingRoutes(mux, store)
 	routes.RegisterOrderRoutes(mux, store)
+	routes.RegisterFollowRoutes(mux, store)
 
 	log.Println("SellEasy API listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", withCORS(mux)))
