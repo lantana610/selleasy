@@ -1,18 +1,14 @@
 const API_BASE = "http://localhost:8080/api/v1";
 
-fetch(`${API_BASE}/listings`)
-  .then(response => response.json())
-  .then(listings => {
-    renderListings(listings);
-  })
-  .catch(error => {
-    console.error("Failed to fetch listings:", error);
-  });
-
 function renderListings(listings) {
   const container = document.getElementById("listings");
+  container.innerHTML = "";
 
   for (const listing of listings) {
+    if (listing.status !== "available") {
+      continue;
+    }
+
     const card = document.createElement("div");
     card.className = "product-card";
     card.innerHTML = `
@@ -30,7 +26,6 @@ function renderListings(listings) {
     container.appendChild(card);
   }
 }
-
 function placeOrder(listing) {
   if (!currentUser) {
     alert("Please log in first.");
@@ -39,7 +34,6 @@ function placeOrder(listing) {
 
   showOrderModal(listing);
 }
-
 function showOrderModal(listing) {
   const modal = document.getElementById("orderModal");
   modal.innerHTML = `
@@ -67,6 +61,18 @@ function closeOrderModal() {
   modal.classList.remove("visible");
 }
 let currentUser = null;
+
+function loadListings() {
+  fetch(`${API_BASE}/listings`)
+    .then(response => response.json())
+    .then(listings => {
+      renderListings(listings);
+    })
+    .catch(error => {
+      console.error("Failed to fetch listings:", error);
+    });
+}
+loadListings();
 function confirmOrder(listing) {
   fetch(`${API_BASE}/orders`, {
     method: "POST",
@@ -90,6 +96,7 @@ function confirmOrder(listing) {
     .then(order => {
       console.log("Order placed:", order);
       closeOrderModal();
+      loadListings();
     })
     .catch(error => {
       console.error("Failed to place order:", error);
@@ -124,3 +131,5 @@ loginButton.addEventListener("click", () => {
       console.error(error);
     });
 });
+
+
