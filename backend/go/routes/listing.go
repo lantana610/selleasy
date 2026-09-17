@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"selleasy/models"
+	"selleasy/services"
 )
 
 type createListingRequest struct {
@@ -44,7 +45,20 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 		Country:     req.Country,
 	}
 
-	created := store.CreateListing(listing)
+		created := store.CreateListing(listing)
+
+	followers := store.GetMatchingFollowers(created)
+	for _, follow := range followers {
+		user, exists := store.GetUser(follow.UserID)
+		email := ""
+		if exists {
+			email = user.Email
+		}
+		services.QueueEmailNotification(follow.UserID, "new_listing", map[string]interface{}{
+			"title": created.Title,
+			"email": email,
+		})
+	}
 
 	json.NewEncoder(w).Encode(created)
 }
