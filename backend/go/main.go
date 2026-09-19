@@ -3,14 +3,28 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
+
 	"selleasy/models"
 	"selleasy/routes"
 )
 
-
 func main() {
 
 	store := models.NewStore()
+
+	if err := store.LoadFromFile("data.json"); err != nil {
+		log.Printf("could not load data.json: %v", err)
+	}
+
+	go func() {
+		for {
+			time.Sleep(5 * time.Second)
+			if err := store.SaveToFile("data.json"); err != nil {
+				log.Printf("could not save data.json: %v", err)
+			}
+		}
+	}()
 
 	mux := http.NewServeMux()
 

@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"sync"
+	"os"
+	"encoding/json"
 )
 
 type Store struct {
@@ -149,4 +151,31 @@ func (s *Store) CreateFollow(follow Follow) Follow {
 	follow.ID = newID()
 	s.Follows[follow.ID] = follow
 	return follow
+}
+
+func (s *Store) SaveToFile(path string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	data, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, data, 0644)
+}
+
+func (s *Store) LoadFromFile(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return json.Unmarshal(data, s)
 }
