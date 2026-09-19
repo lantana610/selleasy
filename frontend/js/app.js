@@ -131,5 +131,34 @@ loginButton.addEventListener("click", () => {
       console.error(error);
     });
 });
+const followButton = document.getElementById("followButton");
+followButton.addEventListener("click", () => {
+  if (!currentUser) {
+    alert("Please log in first.");
+    return;
+  }
+
+  const category = document.getElementById("followCategory").value;
+  const city = document.getElementById("followCity").value;
+
+  fetch(`${API_BASE}/follows`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: currentUser.id,
+      category: category,
+      city: city,
+    }),
+  })
+    .then(response => response.json())
+    .then(follow => {
+      console.log("Follow created:", follow);
+      document.getElementById("followStatus").textContent = "Following!";
+    })
+    .catch(error => {
+      console.error("Failed to create follow:", error);
+      document.getElementById("followStatus").textContent = "Failed to follow";
+    });
+});
 
 
