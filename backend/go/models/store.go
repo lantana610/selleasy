@@ -179,3 +179,15 @@ func (s *Store) LoadFromFile(path string) error {
 
 	return json.Unmarshal(data, s)
 }
+func (s *Store) GetOrdersByBuyer(buyerID string) []Order {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	result := []Order{}
+	for _, order := range s.Orders {
+		if order.BuyerID == buyerID {
+			result = append(result, order)
+		}
+	}
+	return result
+}
