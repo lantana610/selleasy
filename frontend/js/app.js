@@ -161,4 +161,40 @@ followButton.addEventListener("click", () => {
     });
 });
 
+const myOrdersButton = document.getElementById("myOrdersButton");
+myOrdersButton.addEventListener("click", () => {
+  if (!currentUser) {
+    alert("Please log in first.");
+    return;
+  }
+
+  fetch(`${API_BASE}/orders?buyer_id=${currentUser.id}`)
+    .then(response => response.json())
+    .then(orders => {
+      renderMyOrders(orders);
+    })
+    .catch(error => {
+      console.error("Failed to fetch orders:", error);
+    });
+});
+
+function renderMyOrders(orders) {
+  const container = document.getElementById("myOrdersList");
+  container.innerHTML = "";
+
+  if (orders.length === 0) {
+    container.innerHTML = "<p>You have no orders yet.</p>";
+    return;
+  }
+
+  for (const order of orders) {
+    const item = document.createElement("div");
+    item.className = "order-item";
+    item.innerHTML = `
+      <p>${order.currency} ${order.amount} — <strong>${order.status}</strong></p>
+    `;
+    container.appendChild(item);
+  }
+}
+
 
