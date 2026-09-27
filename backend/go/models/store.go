@@ -191,3 +191,28 @@ func (s *Store) GetOrdersByBuyer(buyerID string) []Order {
 	}
 	return result
 }
+func (s *Store) GetListingsBySeller(sellerID string) []Listing {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	result := []Listing{}
+	for _, listing := range s.Listings {
+		if listing.SellerID == sellerID {
+			result = append(result, listing)
+		}
+	}
+	return result
+}
+
+func (s *Store) GetOrdersBySeller(sellerID string) []Order {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	result := []Order{}
+	for _, order := range s.Orders {
+		if order.SellerID == sellerID {
+			result = append(result, order)
+		}
+	}
+	return result
+}

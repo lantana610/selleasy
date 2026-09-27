@@ -69,6 +69,19 @@ func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
 	mux.HandleFunc("GET /api/v1/listings", func(w http.ResponseWriter, r *http.Request) {
 		handleGetListings(w, r, store)
 	})
+		mux.HandleFunc("GET /api/v1/listings/mine", func(w http.ResponseWriter, r *http.Request) {
+		handleGetMyListings(w, r, store)
+	})
+}
+func handleGetMyListings(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	sellerID := r.URL.Query().Get("seller_id")
+	if sellerID == "" {
+		http.Error(w, "seller_id is required", http.StatusBadRequest)
+		return
+	}
+
+	listings := store.GetListingsBySeller(sellerID)
+	json.NewEncoder(w).Encode(listings)
 }
 
 func handleGetListings(w http.ResponseWriter, r *http.Request, store *models.Store) {

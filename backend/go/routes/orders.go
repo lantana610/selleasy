@@ -27,7 +27,7 @@ func RegisterOrderRoutes(mux *http.ServeMux, store *models.Store) {
 	mux.HandleFunc("PATCH /api/v1/orders/{id}/status", func(w http.ResponseWriter, r *http.Request) {
 		handleUpdateOrderStatus(w, r, store)
 	})
-		mux.HandleFunc("GET /api/v1/orders", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /api/v1/orders", func(w http.ResponseWriter, r *http.Request) {
 		handleGetOrders(w, r, store)
 	})
 }
@@ -105,11 +105,19 @@ func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *mode
 }
 func handleGetOrders(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	buyerID := r.URL.Query().Get("buyer_id")
-	if buyerID == "" {
-		http.Error(w, "buyer_id is required", http.StatusBadRequest)
+	sellerID := r.URL.Query().Get("seller_id")
+
+	if buyerID != "" {
+		orders := store.GetOrdersByBuyer(buyerID)
+		json.NewEncoder(w).Encode(orders)
 		return
 	}
 
-	orders := store.GetOrdersByBuyer(buyerID)
-	json.NewEncoder(w).Encode(orders)
+	if sellerID != "" {
+		orders := store.GetOrdersBySeller(sellerID)
+		json.NewEncoder(w).Encode(orders)
+		return
+	}
+
+	http.Error(w, "buyer_id or seller_id is required", http.StatusBadRequest)
 }
