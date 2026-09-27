@@ -61,6 +61,11 @@ function closeOrderModal() {
   modal.classList.remove("visible");
 }
 let currentUser = null;
+const savedUser =localStorage.getItem("currentUser");
+if (savedUser) {
+  currentUser = JSON.parse(savedUser);
+  document.getElementById("loginStatus").textContent = `logged in as ${currentUser.email}`;
+}
 
 function loadListings() {
   fetch(`${API_BASE}/listings`)
@@ -124,6 +129,7 @@ loginButton.addEventListener("click", () => {
     .then(result => {
       const userID = result.split(": ")[1];
       currentUser = { email: email, id: userID };
+      ;localStorage.setItem("currentUser",  JSON.stringify(currentUser));
       document.getElementById("loginStatus").textContent = `Logged in as ${email}`;
     })
     .catch(error => {
