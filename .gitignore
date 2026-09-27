@@ -1,3 +1,5 @@
 backend/python/venv/
 backend/go/selleasy
 backend/go/data.json
+__pycache__/
+*.pyc
