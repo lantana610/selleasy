@@ -14,7 +14,8 @@ type Store struct {
 	Users    map[string]User
 	Listings map[string]Listing
 	Orders   map[string]Order
-	Follows   map[string]Follow
+	Follows  map[string]Follow
+	Sessions map[string]string
 }
 
 func NewStore() *Store {
@@ -23,6 +24,7 @@ func NewStore() *Store {
 		Listings: make(map[string]Listing),
 		Orders:   make(map[string]Order),
 		Follows:   make(map[string]Follow),
+		Sessions: make(map[string]string),
 	}
 }
 
