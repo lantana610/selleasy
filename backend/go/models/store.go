@@ -116,6 +116,9 @@ func (s *Store) UpdateOrderStatus(orderID string, status OrderStatus) (Order, er
 	if !exists {
 		return Order{}, errors.New("order not found")
 	}
+	if order.Status != OrderRequested {
+		return Order{}, errors.New("this order is already " + string(order.Status))
+	}
 
 	order.Status = status
 
