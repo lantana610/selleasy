@@ -112,7 +112,7 @@ func (s *Store) UpdateOrderStatus(orderID string, status OrderStatus) (Order, er
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	order, exists := s.Orders[orderID]
+		order, exists := s.Orders[orderID]
 	if !exists {
 		return Order{}, errors.New("order not found")
 	}
