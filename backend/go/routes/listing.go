@@ -20,6 +20,10 @@ type createListingRequest struct {
 	Country     string  `json:"country"`
 }
 
+	user, ok := requireUser(w, r, store)
+	if !ok {
+		return
+	}
 func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	var req createListingRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -28,13 +32,13 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 		return
 	}
 
-	if req.Title == "" || req.SellerID == "" || req.Price <= 0 {
-		http.Error(w, "seller_id, title, and a positive price are required", http.StatusBadRequest)
+	if req.Title == "" || req.Price <= 0 {
+		http.Error(w, "a title and a price above zero are required", http.StatusBadRequest)
 		return
 	}
 
 	listing := models.Listing{
-		SellerID:    req.SellerID,
+		SellerID:    user.ID,,
 		Title:       req.Title,
 		Description: req.Description,
 		Category:    req.Category,
@@ -45,7 +49,7 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 		Country:     req.Country,
 	}
 
-		created := store.CreateListing(listing)
+	created := store.CreateListing(listing)
 
 	followers := store.GetMatchingFollowers(created)
 	for _, follow := range followers {
@@ -69,7 +73,7 @@ func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
 	mux.HandleFunc("GET /api/v1/listings", func(w http.ResponseWriter, r *http.Request) {
 		handleGetListings(w, r, store)
 	})
-		mux.HandleFunc("GET /api/v1/listings/mine", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /api/v1/listings/mine", func(w http.ResponseWriter, r *http.Request) {
 		handleGetMyListings(w, r, store)
 	})
 }
