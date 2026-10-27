@@ -16,6 +16,12 @@ type registerRequest struct {
 	State    string `json:"state"`
 	Country  string `json:"country"`
 }
+type authResponse struct {
+	Token    string `json:"token"`
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	FullName string `json:"full_name"`
+}
 
 type loginRequest struct{
 	Email    string `json:"email"`
@@ -86,5 +92,10 @@ func handleLogin(w http.ResponseWriter, r *http.Request, store *models.Store) {
 		http.Error(w, "invalid email and password", http.StatusUnauthorized)
 		return
 	}
-	w.Write([]byte("logged in: " + user.ID))
-}
+	token := store.CreateSession(user.ID)
+	writeJSON(w, http.StatusOK, authResponse{
+		Token:    token,
+		ID:       user.ID,
+		Email:    user.Email,
+		FullName: user.FullName,
+	})}
