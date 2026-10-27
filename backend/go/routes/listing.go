@@ -20,11 +20,11 @@ type createListingRequest struct {
 	Country     string  `json:"country"`
 }
 
+func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	user, ok := requireUser(w, r, store)
 	if !ok {
 		return
 	}
-func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	var req createListingRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -38,7 +38,7 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 	}
 
 	listing := models.Listing{
-		SellerID:    user.ID,,
+		SellerID:    user.ID,
 		Title:       req.Title,
 		Description: req.Description,
 		Category:    req.Category,
