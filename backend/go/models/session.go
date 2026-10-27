@@ -8,6 +8,13 @@ func (s *Store) CreateSession(userID string) string {
 	s.Sessions[token] = userID
 	return token
 }
+func (s *Store) GetOrder(id string) (Order, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	order, ok := s.Orders[id]
+	return order, ok
+}
 
 func (s *Store) SessionUser(token string) (User, bool) {
 	s.mu.Lock()

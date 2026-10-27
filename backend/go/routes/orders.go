@@ -86,7 +86,22 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 }
 
 func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *models.Store) {
-	orderID := r.PathValue("id")
+	user, ok := requireUser(w, r, store)
+	if !ok {
+		return
+	}
+
+	order, exists := store.GetOrder(r.PathValue("id"))
+	if !exists {
+		http.Error(w, "order not found", http.StatusNotFound)
+		return
+	}
+	isSeller := order.SellerID == user.ID
+	isBuyer := order.BuyerID == user.ID
+	if !isSeller && !isBuyer {
+		http.Error(w, "this is not your order", http.StatusForbidden)
+		return
+	}
 
 	var req updateOrderStatusRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -96,14 +111,18 @@ func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *mode
 	}
 
 	status := models.OrderStatus(req.Status)
-	if status != models.OrderCompleted && status != models.OrderCancelled && status != models.OrderRequested {
-		http.Error(w, "status must be requested, completed, or cancelled", http.StatusBadRequest)
+	if status == models.OrderCompleted && !isSeller {
+		http.Error(w, "only the seller can mark an order as sold", http.StatusForbidden)
+		return
+	}
+	if status != models.OrderCompleted && status != models.OrderCancelled {
+		http.Error(w, "status must be completed or cancelled", http.StatusBadRequest)
 		return
 	}
 
-	updated, err := store.UpdateOrderStatus(orderID, status)
+	updated, err := store.UpdateOrderStatus(order.ID, status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 
