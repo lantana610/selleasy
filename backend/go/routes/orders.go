@@ -9,11 +9,8 @@ import (
 )
 
 type placeOrderRequest struct {
-	ListingID     string  `json:"listing_id"`
-	BuyerID       string  `json:"buyer_id"`
-	PaymentMethod string  `json:"payment_method"`
-	Amount        float64 `json:"amount"`
-	Currency      string  `json:"currency"`
+	ListingID     string `json:"listing_id"`
+	PaymentMethod string `json:"payment_method"`
 }
 
 type updateOrderStatusRequest struct {
@@ -33,15 +30,20 @@ func RegisterOrderRoutes(mux *http.ServeMux, store *models.Store) {
 }
 
 func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	
+	user, ok := requireUser(w, r, store)
+	if !ok {
+		return
+	}
+
 	var req placeOrderRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
-
-	if req.ListingID == "" || req.BuyerID == "" {
-		http.Error(w, "listing_id and buyer_id are required", http.StatusBadRequest)
+	if req.ListingID == "" {
+		http.Error(w, "listing_id is required", http.StatusBadRequest)
 		return
 	}
 
@@ -50,14 +52,18 @@ func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Stor
 		http.Error(w, "listing not found", http.StatusNotFound)
 		return
 	}
+	if listing.SellerID == user.ID {
+		http.Error(w, "you can't order your own listing", http.StatusBadRequest)
+		return
+	}
 
 	order := models.Order{
 		ListingID:     req.ListingID,
-		BuyerID:       req.BuyerID,
 		SellerID:      listing.SellerID,
 		PaymentMethod: req.PaymentMethod,
-		Amount:        req.Amount,
-		Currency:      req.Currency,
+		BuyerID:       user.ID,
+		Amount:        listing.Price,
+		Currency:      listing.Currency,
 	}
 
 	created, err := store.CreateOrder(order)

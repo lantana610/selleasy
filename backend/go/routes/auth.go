@@ -73,7 +73,13 @@ func handleRegister(w http.ResponseWriter, r *http.Request, store *models.Store)
 
 	created := store.CreateUser(user)
 
-	w.Write([]byte("created user: " + created.ID))
+	token := store.CreateSession(created.ID)
+	writeJSON(w, http.StatusCreated, authResponse{
+		Token:    token,
+		ID:       created.ID,
+		Email:    created.Email,
+		FullName: created.FullName,
+	})
 }
 func handleLogin(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	var req loginRequest
