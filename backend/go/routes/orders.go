@@ -129,20 +129,17 @@ func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *mode
 	json.NewEncoder(w).Encode(updated)
 }
 func handleGetOrders(w http.ResponseWriter, r *http.Request, store *models.Store) {
-	buyerID := r.URL.Query().Get("buyer_id")
-	sellerID := r.URL.Query().Get("seller_id")
-
-	if buyerID != "" {
-		orders := store.GetOrdersByBuyer(buyerID)
-		json.NewEncoder(w).Encode(orders)
+	user, ok := requireUser(w, r, store)
+	if !ok {
 		return
 	}
 
-	if sellerID != "" {
-		orders := store.GetOrdersBySeller(sellerID)
-		json.NewEncoder(w).Encode(orders)
-		return
+	var orders []models.Order
+	if r.URL.Query().Get("role") == "seller" {
+		orders = store.GetOrdersBySeller(user.ID)
+	} else {
+		orders = store.GetOrdersByBuyer(user.ID)
 	}
 
-	http.Error(w, "buyer_id or seller_id is required", http.StatusBadRequest)
+	writeJSON(w, http.StatusOK, orders)
 }
