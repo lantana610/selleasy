@@ -1,48 +1,58 @@
 const API_BASE = "http://localhost:8080/api/v1";
 
-let currentUser = null;
-const savedUser = localStorage.getItem("currentUser");
-if (savedUser) {
-  currentUser = JSON.parse(savedUser);
-}
+localStorage.removeItem("currentUser");
 
-function updateLoginStatus() {
-  const status = document.getElementById("loginStatus");
-  if (status && currentUser) {
-    status.textContent = `Logged in as ${currentUser.email}`;
+function getSession() {
+  try {
+    return JSON.parse(localStorage.getItem("session"));
+  } catch (e) {
+    return null;
   }
 }
-updateLoginStatus();
 
-function wireLoginForm() {
-  const loginButton = document.getElementById("loginButton");
-  if (!loginButton) return;
+function saveSession(session) {
+  localStorage.setItem("session", JSON.stringify(session));
+}
 
-  loginButton.addEventListener("click", () => {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+function clearSession() {
+  localStorage.removeItem("session");
+}
 
-    fetch(`${API_BASE}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Login failed");
-        }
-        return response.text();
-      })
-      .then(result => {
-        const userID = result.split(": ")[1];
-        currentUser = { email: email, id: userID };
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        updateLoginStatus();
-      })
-      .catch(error => {
-        document.getElementById("loginStatus").textContent = "Login failed";
-        console.error(error);
-      });
+async function api(path, options = {}) {
+  const headers = {};
+  const session = getSession();
+  if (session) {
+    headers["Authorization"] = "Bearer " + session.token;
+  }
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(API_BASE + path, {
+    method: options.method || "GET",
+    headers: headers,
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(text.trim() || "Something went wrong");
+  }
+  return text ? JSON.parse(text) : null;
+}
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, function (ch) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
   });
 }
-wireLoginForm();
+
+function setMessage(element, text, kind) {
+  if (!element) return;
+  element.textContent = text || "";
+  element.className = "message" + (kind ? " " + kind : "");
+}
+
+function announceSessionChange() {
+  window.dispatchEvent(new Event("session-changed"));
+}
