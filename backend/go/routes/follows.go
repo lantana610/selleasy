@@ -8,7 +8,6 @@ import (
 )
 
 type createFollowRequest struct {
-	UserID   string `json:"user_id"`
 	Category string `json:"category"`
 	City     string `json:"city"`
 }
@@ -20,6 +19,11 @@ func RegisterFollowRoutes(mux *http.ServeMux, store *models.Store) {
 }
 
 func handleCreateFollow(w http.ResponseWriter, r *http.Request, store *models.Store) {
+	user, ok := requireUser(w, r, store)
+	if !ok {
+		return
+	}
+
 	var req createFollowRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -27,18 +31,18 @@ func handleCreateFollow(w http.ResponseWriter, r *http.Request, store *models.St
 		return
 	}
 
-	if req.UserID == "" {
-		http.Error(w, "user_id is required", http.StatusBadRequest)
+	if req.Category == "" && req.City == "" {
+		http.Error(w, "choose a category, a city, or both", http.StatusBadRequest)
 		return
 	}
 
 	follow := models.Follow{
-		UserID:   req.UserID,
+		UserID:   user.ID,
 		Category: req.Category,
 		City:     req.City,
 	}
 
 	created := store.CreateFollow(follow)
 
-	json.NewEncoder(w).Encode(created)
+	writeJSON(w, http.StatusCreated, created)
 }
