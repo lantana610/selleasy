@@ -9,7 +9,6 @@ import (
 )
 
 type createListingRequest struct {
-	SellerID    string  `json:"seller_id"`
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`
@@ -36,6 +35,10 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 		http.Error(w, "a title and a price above zero are required", http.StatusBadRequest)
 		return
 	}
+	currency := req.Currency
+	if currency == "" {
+		currency = "USD"
+	}
 
 	listing := models.Listing{
 		SellerID:    user.ID,
@@ -43,7 +46,7 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 		Description: req.Description,
 		Category:    req.Category,
 		Price:       req.Price,
-		Currency:    req.Currency,
+		Currency:    currency,
 		City:        req.City,
 		State:       req.State,
 		Country:     req.Country,
@@ -53,10 +56,10 @@ func handleCreateListing(w http.ResponseWriter, r *http.Request, store *models.S
 
 	followers := store.GetMatchingFollowers(created)
 	for _, follow := range followers {
-		user, exists := store.GetUser(follow.UserID)
+		follower, exists := store.GetUser(follow.UserID)
 		email := ""
 		if exists {
-			email = user.Email
+			email = follower.Email
 		}
 		services.QueueEmailNotification(follow.UserID, "new_listing", map[string]interface{}{
 			"title": created.Title,
@@ -78,14 +81,12 @@ func RegisterListingRoutes(mux *http.ServeMux, store *models.Store) {
 	})
 }
 func handleGetMyListings(w http.ResponseWriter, r *http.Request, store *models.Store) {
-	sellerID := r.URL.Query().Get("seller_id")
-	if sellerID == "" {
-		http.Error(w, "seller_id is required", http.StatusBadRequest)
+	user, ok := requireUser(w, r, store)
+	if !ok {
 		return
 	}
 
-	listings := store.GetListingsBySeller(sellerID)
-	json.NewEncoder(w).Encode(listings)
+	writeJSON(w, http.StatusOK, store.GetListingsBySeller(user.ID))
 }
 
 func handleGetListings(w http.ResponseWriter, r *http.Request, store *models.Store) {
