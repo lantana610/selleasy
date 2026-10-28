@@ -2,11 +2,14 @@ package routes
 
 import (
 	"net/http"
+	"strings"
 
-	"selleasy/models"
 	"encoding/json"
-	"golang.org/x/crypto/bcrypt" 
+	"selleasy/models"
+
+	"golang.org/x/crypto/bcrypt"
 )
+
 type registerRequest struct {
 	FullName string `json:"full_name"`
 	Email    string `json:"email"`
@@ -23,16 +26,21 @@ type authResponse struct {
 	FullName string `json:"full_name"`
 }
 
-type loginRequest struct{
+type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func RegisterAuthRoutes(mux *http.ServeMux, store *models.Store) {
+	mux.HandleFunc("POST /api/v1/logout", func(w http.ResponseWriter, r *http.Request) {
+		token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		store.DeleteSession(token)
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("POST /api/v1/register", func(w http.ResponseWriter, r *http.Request) {
 		handleRegister(w, r, store)
 	})
-	mux.HandleFunc("POST /api/v1/login", func(w http.ResponseWriter, r *http.Request){
+	mux.HandleFunc("POST /api/v1/login", func(w http.ResponseWriter, r *http.Request) {
 		handleLogin(w, r, store)
 	})
 }
@@ -44,12 +52,12 @@ func handleRegister(w http.ResponseWriter, r *http.Request, store *models.Store)
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
-	if req.Email == "" || req.Password == "" || req.FullName == ""{
+	if req.Email == "" || req.Password == "" || req.FullName == "" {
 		http.Error(w, "password, email, and full_name are required, cannot be empty", http.StatusBadRequest)
 		return
 	}
 	_, exists := store.GetUserByEmail(req.Email)
-	if exists{
+	if exists {
 		http.Error(w, "an account already exists with this email", http.StatusConflict)
 		return
 	}
@@ -84,17 +92,17 @@ func handleRegister(w http.ResponseWriter, r *http.Request, store *models.Store)
 func handleLogin(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	var req loginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil{
+	if err != nil {
 		http.Error(w, "json invalid", http.StatusBadRequest)
 		return
 	}
 	user, exists := store.GetUserByEmail(req.Email)
-	if !exists{
+	if !exists {
 		http.Error(w, "invalid email and password", http.StatusUnauthorized)
 		return
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
-	if err != nil{
+	if err != nil {
 		http.Error(w, "invalid email and password", http.StatusUnauthorized)
 		return
 	}
@@ -104,4 +112,5 @@ func handleLogin(w http.ResponseWriter, r *http.Request, store *models.Store) {
 		ID:       user.ID,
 		Email:    user.Email,
 		FullName: user.FullName,
-	})}
+	})
+}
