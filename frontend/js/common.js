@@ -77,4 +77,42 @@ function renderNav(active) {
         "</form>") +
     '<span id="authMessage" class="message"></span>' +
     "</div>";
+
+  if (session) {
+    document.getElementById("logoutButton").addEventListener("click", logOut);
+  } else {
+    document.getElementById("loginForm").addEventListener("submit", logIn);
+  }
 }
+
+async function logIn(event) {
+  event.preventDefault();
+  const message = document.getElementById("authMessage");
+  try {
+    const user = await api("/login", {
+      method: "POST",
+      body: {
+        email: document.getElementById("loginEmail").value,
+        password: document.getElementById("loginPassword").value,
+      },
+    });
+    saveSession({ token: user.token, id: user.id, email: user.email });
+    announceSessionChange();
+  } catch (err) {
+    setMessage(message, err.message, "error");
+  }
+}
+
+async function logOut() {
+  try {
+    await api("/logout", { method: "POST" });
+  } catch (err) {
+    // we log out locally either way
+  }
+  clearSession();
+  announceSessionChange();
+}
+
+window.addEventListener("session-changed", function () {
+  renderNav();
+});
