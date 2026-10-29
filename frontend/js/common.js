@@ -56,3 +56,25 @@ function setMessage(element, text, kind) {
 function announceSessionChange() {
   window.dispatchEvent(new Event("session-changed"));
 }
+
+function renderNav(active) {
+  const nav = document.getElementById("navbar");
+  const session = getSession();
+
+  nav.innerHTML =
+    '<a class="brand" href="index.html">SellEasy</a>' +
+    '<div class="links">' +
+    '<a href="index.html">Browse</a>' +
+    '<a href="dashboard.html">Dashboard</a>' +
+    "</div>" +
+    '<div class="auth">' +
+    (session
+      ? "<span>" + esc(session.email) + '</span><button type="button" id="logoutButton">Log out</button>'
+      : '<form id="loginForm">' +
+        '<input type="email" id="loginEmail" placeholder="Email" required>' +
+        '<input type="password" id="loginPassword" placeholder="Password" required>' +
+        '<button type="submit">Log in</button>' +
+        "</form>") +
+    '<span id="authMessage" class="message"></span>' +
+    "</div>";
+}
