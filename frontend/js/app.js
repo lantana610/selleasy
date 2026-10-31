@@ -44,7 +44,38 @@ function startOrder(listing) {
     setMessage(message, "Log in to order.", "error");
     return;
   }
-  setMessage(message, "You chose: " + listing.title, "ok");
+  openOrderDialog(listing);
+}
+
+function openOrderDialog(listing) {
+  const modal = document.getElementById("orderModal");
+  modal.innerHTML =
+    '<div class="modal-box">' +
+    "<h3>Confirm order</h3>" +
+    "<p>" + esc(listing.title) + " - " + esc(listing.currency) + " " + esc(listing.price) + "</p>" +
+    '<label for="paymentMethod">How will you pay?</label>' +
+    '<select id="paymentMethod">' +
+    '<option value="cash_on_delivery">Cash on delivery</option>' +
+    '<option value="mobile_money">Mobile money</option>' +
+    '<option value="bank_transfer">Bank transfer</option>' +
+    '<option value="pickup">Pickup</option>' +
+    "</select>" +
+    '<p id="orderMessage" class="message"></p>' +
+    '<button type="button" id="confirmOrder">Confirm order</button> ' +
+    '<button type="button" id="cancelOrder">Cancel</button>' +
+    "</div>";
+  modal.hidden = false;
+
+  document.getElementById("cancelOrder").addEventListener("click", closeOrderDialog);
+  document.getElementById("confirmOrder").addEventListener("click", function () {
+    sendOrder(listing);
+  });
+}
+
+function closeOrderDialog() {
+  const modal = document.getElementById("orderModal");
+  modal.hidden = true;
+  modal.innerHTML = "";
 }
 
 loadListings();
