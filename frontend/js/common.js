@@ -116,3 +116,4 @@ async function logOut() {
 window.addEventListener("session-changed", function () {
   renderNav();
 });
+renderNav();
