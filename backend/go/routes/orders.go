@@ -141,12 +141,31 @@ func handleGetOrders(w http.ResponseWriter, r *http.Request, store *models.Store
 		return
 	}
 
+	asSeller := r.URL.Query().Get("role") == "seller"
 	var orders []models.Order
-	if r.URL.Query().Get("role") == "seller" {
+	if asSeller {
 		orders = store.GetOrdersBySeller(user.ID)
 	} else {
 		orders = store.GetOrdersByBuyer(user.ID)
 	}
 
-	writeJSON(w, http.StatusOK, orders)
+	views := []orderView{}
+	for _, order := range orders {
+		view := orderView{Order: order}
+		if listing, ok := store.GetListing(order.ListingID); ok {
+			view.ListingTitle = listing.Title
+		}
+		otherID := order.SellerID
+		if asSeller {
+			otherID = order.BuyerID
+		}
+		if other, ok := store.GetUser(otherID); ok {
+			view.CounterpartName = other.FullName
+			view.CounterpartEmail = other.Email
+			view.CounterpartPhone = other.Phone
+		}
+		views = append(views, view)
+	}
+
+	writeJSON(w, http.StatusOK, views)
 }
