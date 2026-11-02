@@ -97,7 +97,7 @@ async function logIn(event) {
       },
     });
     saveSession({ token: user.token, id: user.id, email: user.email });
-    announceSessionChange();
+    window.location.href = "dashboard.html";
   } catch (err) {
     setMessage(message, err.message, "error");
   }
