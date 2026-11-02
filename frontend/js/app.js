@@ -64,7 +64,7 @@ function openOrderDialog(listing) {
     '<button type="button" id="confirmOrder">Confirm order</button> ' +
     '<button type="button" id="cancelOrder">Cancel</button>' +
     "</div>";
-  modal.hidden = false;
+  modal.classList.add("visible");
 
   document.getElementById("cancelOrder").addEventListener("click", closeOrderDialog);
   document.getElementById("confirmOrder").addEventListener("click", function () {
@@ -74,8 +74,28 @@ function openOrderDialog(listing) {
 
 function closeOrderDialog() {
   const modal = document.getElementById("orderModal");
-  modal.hidden = true;
+  modal.classList.remove("visible");
   modal.innerHTML = "";
 }
+async function sendOrder(listing) {
+  const orderMessage = document.getElementById("orderMessage");
+  const confirmButton = document.getElementById("confirmOrder");
+  confirmButton.disabled = true;
 
+  try {
+    await api("/orders", {
+      method: "POST",
+      body: {
+        listing_id: listing.id,
+        payment_method: document.getElementById("paymentMethod").value,
+      },
+    });
+    closeOrderDialog();
+    setMessage(document.getElementById("pageMessage"), "Order sent. The seller has been notified.", "ok");
+    loadListings();
+  } catch (err) {
+    setMessage(orderMessage, err.message, "error");
+    confirmButton.disabled = false;
+  }
+}
 loadListings();
