@@ -128,6 +128,13 @@ func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *mode
 
 	json.NewEncoder(w).Encode(updated)
 }
+type orderView struct {
+	models.Order
+	ListingTitle     string `json:"listing_title"`
+	CounterpartName  string `json:"counterpart_name"`
+	CounterpartEmail string `json:"counterpart_email"`
+	CounterpartPhone string `json:"counterpart_phone"`
+}
 func handleGetOrders(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	user, ok := requireUser(w, r, store)
 	if !ok {
