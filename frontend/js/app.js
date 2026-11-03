@@ -11,10 +11,14 @@ async function loadListings() {
 }
 
 function drawListings(listings) {
+    listings = listings.filter(function (listing) {
+    return listing.status === "available";
+  });
+
   if (listings.length === 0) {
     listingsEl.innerHTML = "<p>No items yet.</p>";
     return;
-  }
+  } 
 
   listingsEl.innerHTML = listings.map(function (listing) {
     return (

@@ -30,7 +30,7 @@ func RegisterOrderRoutes(mux *http.ServeMux, store *models.Store) {
 }
 
 func handlePlaceOrder(w http.ResponseWriter, r *http.Request, store *models.Store) {
-	
+
 	user, ok := requireUser(w, r, store)
 	if !ok {
 		return
@@ -128,6 +128,7 @@ func handleUpdateOrderStatus(w http.ResponseWriter, r *http.Request, store *mode
 
 	json.NewEncoder(w).Encode(updated)
 }
+
 type orderView struct {
 	models.Order
 	ListingTitle     string `json:"listing_title"`
@@ -135,6 +136,7 @@ type orderView struct {
 	CounterpartEmail string `json:"counterpart_email"`
 	CounterpartPhone string `json:"counterpart_phone"`
 }
+
 func handleGetOrders(w http.ResponseWriter, r *http.Request, store *models.Store) {
 	user, ok := requireUser(w, r, store)
 	if !ok {
