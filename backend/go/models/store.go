@@ -159,6 +159,7 @@ func (s *Store) CreateFollow(follow Follow) Follow {
 }
 
 func (s *Store) SaveToFile(path string) error {
+	
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -167,7 +168,11 @@ func (s *Store) SaveToFile(path string) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+		tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
 }
 
 func (s *Store) LoadFromFile(path string) error {
