@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"path/filepath"
 
 	"selleasy/models"
 	"selleasy/routes"
@@ -13,10 +14,14 @@ func main() {
 
 	store := models.NewStore()
 
-	if err := store.LoadFromFile("data.json"); err != nil {
-		log.Printf("could not load data.json: %v", err)
+		dataPath, err := filepath.Abs("data.json")
+	if err != nil {
+		log.Fatalf("cannot work out the data file path: %v", err)
 	}
-
+	log.Printf("using data file: %s", dataPath)
+	if err := store.LoadFromFile(dataPath); err != nil {
+		log.Fatalf("could not read %s: %v (fix or move that file, then start again)", dataPath, err)
+	}
 	go func() {
 		for {
 			time.Sleep(5 * time.Second)
