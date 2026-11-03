@@ -36,13 +36,17 @@ async function loadSellerOrders() {
       return;
     }
     list.innerHTML = orders.map(function (order) {
+      const buttons = order.status === "requested"
+        ? '<br><button type="button" data-order="' + esc(order.id) + '" data-status="completed">Mark as sold</button> ' +
+          '<button type="button" data-order="' + esc(order.id) + '" data-status="cancelled">Decline</button>'
+        : "";
       return (
         "<li>" + esc(order.listing_title) + " - " + esc(order.currency) + " " +
         esc(order.amount) + " (" + esc(order.status) + ")<br>" +
         "Buyer: " + esc(order.counterpart_name) + ", " + esc(order.counterpart_email) +
         ", " + esc(order.counterpart_phone) + "<br>" +
         "Payment: " + esc(PAYMENT_LABELS[order.payment_method] || order.payment_method) +
-        "</li>"
+        buttons + "</li>"
       );
     }).join("");
   } catch (err) {
@@ -50,6 +54,27 @@ async function loadSellerOrders() {
   }
 }
 
+document.getElementById("sellerOrders").addEventListener("click", async function (event) {
+  const button = event.target.closest("button[data-order]");
+  if (!button) return;
+
+  const status = button.dataset.status;
+  if (status === "cancelled" && !confirm("Decline this order?")) return;
+
+  button.disabled = true;
+  try {
+    await api("/orders/" + button.dataset.order + "/status", {
+      method: "PATCH",
+      body: { status: status },
+    });
+    setMessage(document.getElementById("dashMessage"),
+      status === "completed" ? "Marked as sold." : "Order declined.", "ok");
+  } catch (err) {
+    setMessage(document.getElementById("dashMessage"), err.message, "error");
+  }
+  loadMyListings();
+  loadSellerOrders();
+});
 function showDashboard() {
   const session = getSession();
   gate.hidden = Boolean(session);
